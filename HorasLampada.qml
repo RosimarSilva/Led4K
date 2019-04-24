@@ -2,41 +2,36 @@ import QtQuick 2.0
 
 
 Item {
-    id:password
-    property int  asteriscoo: 0
-
+    property int  horaslamp: 0
+    id:lamp
     Image {
-        id: senhaconf
+        id: horasLamp
         x: 35
         y: 20
-        source: "Telas/senha.bmp"
+        source: "Telas/horasLampada.jpg"
         fillMode: Image.PreserveAspectFit
 
+
         Connections{  //enquanto não há white balance feito fica piscando
-                target: senha_
-            onScreenConfig:{
-                asterisco.state = "Asterisco0";
-                root.state =  "Configuração"
-                serial.setComandoIke(8);//chama o menu de configurção da ikegami
+                target: serial
+            onBackConfig:{
+                      root.state = "Configuração"
              }
         }
 
         Connections{  //enquanto não há white balance feito fica piscando
-            target: senha_
-            onScreenMenu:{
-                asterisco.state = "Asterisco0";
-                root.state =  "Menu"
-            }
+                target: serial
+            onHorasLampChanged:{
+                       horaslamp = serial.horas;
+             }
         }
-
-        Connections{  //enquanto não há white balance feito fica piscando
-            target: senha_
-            onScreenNumberSerie:{
-                  asterisco.state = "Zero"
-
-               root.state =  "SerialNumber"
-
-            }
+        Text {
+            x: 180
+            y: 80
+            horizontalAlignment:  Text.AlignVCenter
+            font.pointSize: 22
+            color: "yellow"
+            text:+lamp.horaslamp
         }
 
         Image {
@@ -50,8 +45,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    contAsterisco();
-                    senha_.setSenha(1);
+                    serial.writeHoras(1,0);
                 }
             }
         }
@@ -67,9 +61,9 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                   senha_.setSenha(2);
-                 }
+
+                    serial.writeHoras(2,0);
+                }
             }
         }
 
@@ -84,9 +78,8 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                      senha_.setSenha(3);
 
+                    serial.writeHoras(3,0);
                 }
             }
         }
@@ -102,8 +95,8 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                     senha_.setSenha(4);
+                    serial.writeHoras(4,0);
+
                  }
             }
         }
@@ -119,8 +112,8 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    contAsterisco();
-                     senha_.setSenha(5);
+
+                    serial.writeHoras(5,0);
                 }
             }
         }
@@ -136,8 +129,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                       senha_.setSenha(6);
+                    serial.writeHoras(6,0);
                 }
             }
         }
@@ -153,8 +145,8 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    contAsterisco();
-                    senha_.setSenha(7);
+                    serial.writeHoras(7,0);
+
                 }
             }
         }
@@ -170,8 +162,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    contAsterisco();
-                    senha_.setSenha(8);
+                    serial.writeHoras(8,0);
                 }
             }
         }
@@ -187,8 +178,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                      senha_.setSenha(9);
+                    serial.writeHoras(9,0);
                  }
             }
         }
@@ -204,8 +194,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                     contAsterisco();
-                     senha_.setSenha(0);
+                    serial.writeHoras(0,0);
                  }
             }
         }
@@ -221,12 +210,8 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                   asterisco.state = "Asterisco0"
-                    // if(asteriscoo >= 4)  root.state = "Configuration"
-                   //  else  root.state = "Menu"
-                     asteriscoo = 0;
-                      senha_.setSenha(100);
-
+                      root.state = "Configuration"
+                      serial.writeHoras(0,100);
                  }
             }
         }
@@ -242,11 +227,7 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    asteriscoo -= 1;
-                    if(asteriscoo <= 0)asteriscoo = 0;
-
-                    showAsterisco();
-                     senha_.setSenha(99);
+                    serial.writeHoras(0,99);
                 }
             }
         }
@@ -262,90 +243,10 @@ Item {
                 onPressed: { parent.scale = 0.95; }
                 onReleased: {
                     parent.scale = 1.0;
-                    root.state = "Menu"
+                    root.state = "Configuração"
                 }
             }
         }
-
-        Image {
-            id: asterisco
-            x: 165
-            y: 83
-            source: "IconesSenha/asterisco0.bmp"
-            fillMode: Image.PreserveAspectFit
-
-            states: [
-                State {
-                    name: "Asterisco0"
-                },
-                State {
-                    name: "Asterisco1"
-                },
-                State {
-                    name: "Asterisco2"
-                },
-                State {
-                    name: "Asterisco3"
-                },
-                State {
-                    name: "Asterisco4"
-                }
-            ]
-
-            Image {
-                id: ast0
-                source: "IconesSenha/asterisco0.bmp"
-                visible: asterisco.state == "Asterisco0"
-            }
-
-            Image {
-                id: ast1
-                source: "IconesSenha/asterisco1.bmp"
-                visible: asterisco.state == "Asterisco1"
-            }
-
-            Image {
-                id: ast2
-                source: "IconesSenha/asterisco2.bmp"
-                visible: asterisco.state == "Asterisco2"
-            }
-
-            Image {
-                id: ast3
-                source: "IconesSenha/asterisco3.bmp"
-                visible: asterisco.state == "Asterisco3"
-            }
-
-            Image {
-                id: ast4
-                source: "IconesSenha/asterisco4.bmp"
-                visible: asterisco.state == "Asterisco4"
-            }
-        }
-
-    }
-    function showAsterisco()
-    {
-        switch(asteriscoo)
-        {
-             case 0:asterisco.state =  "Asterisco0";break
-
-             case 1:asterisco.state =  "Asterisco1";break
-
-             case 2:asterisco.state =  "Asterisco2";break
-
-             case 3:asterisco.state =  "Asterisco3";break
-
-             case 4:asterisco.state =  "Asterisco4";break
-        }
-    }
-
-    function contAsterisco()
-    {
-        asteriscoo += 1;
-        if(asteriscoo > 4)asteriscoo = 4;
-
-        showAsterisco();
     }
 
 }

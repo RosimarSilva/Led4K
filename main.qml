@@ -15,10 +15,11 @@ Window {
         Controle{id:serial}
         Calendario{id:calendario_}
         Password{id:senha_}
+        Gpio{id:gpio}
 
-        Init{}
+       // Init{}
        // TelaCamera{}
-
+HorasLampada{}
         states: [
             State {
                 name: "Inicializa"
@@ -46,6 +47,12 @@ Window {
             },
             State {
                 name: "Configuração"
+            },
+            State {
+                name: "Mensagens"
+            },
+            State {
+                name: "HorasLamp"
             }
 
         ]
@@ -98,6 +105,16 @@ Window {
             id: configuration
             anchors.fill: parent
             visible: root.state == "Configuração"
+        }
+        Mensagens{
+            id: mens
+            anchors.fill: parent
+            visible: root.state == "Mensagens"
+        }
+        HorasLampada{
+            id: lamp
+            anchors.fill: parent
+            visible: root.state == "HorasLamp"
         }
     }
 }

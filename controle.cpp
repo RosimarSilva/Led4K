@@ -9,6 +9,7 @@ Controle::Controle(QObject *parent) :
     out_ = new QByteArray();
     timeHoras = new QTimer();
     timerBotao = new QTimer();
+    writeFlash();
 
     // inicaliza a serial
      serialInit();
@@ -31,10 +32,55 @@ Controle::~Controle()
 
     qDebug() << Q_FUNC_INFO;
 }
+//escreve arquivos de calibração
+void Controle::writeFlash()
+{
+    QFile escrita;
+
+    dadoSalvo[0] = videoLevel;
+    dadoSalvo[1] = videoLevelLow1;
+    dadoSalvo[2] = videoLevelLow2;
+    dadoSalvo[3] = videoLevelLow3;
+    dadoSalvo[4] = videoLevelLow4;
+    dadoSalvo[5] = enhancementHigh1;
+    dadoSalvo[6] = enhancementHigh2;
+    dadoSalvo[7] = enhancementHigh3;
+    dadoSalvo[8] = enhancementHigh4;
+   //  dadoSalvo[9] = serialNumero;
+
+   //  dadoSalvo[10] = minutoLampada;
+   // dadoSalvo[11] =  horaslampada;
+
+    dadoSalvo[12] =videoLevelLow5;
+   dadoSalvo[13] = videoLevelLow6;
+  dadoSalvo[14] =  videoLevelLow7;
+   dadoSalvo[15] = videoLevelLow8;
+   dadoSalvo[16]= enhancementHigh5;
+   dadoSalvo[17] = enhancementHigh6;
+   dadoSalvo[18] = enhancementHigh7;
+    dadoSalvo[19] = enhancementHigh8;
+   //  dadoSalvo[20] = cameraMode;
+
+
+    escrita.setFileName("home/astus/dadoscalib"); // caminho de onde está salvo os dados de calibração
+    if(!escrita.open(QIODevice::WriteOnly))
+    {
+        qDebug("Falaha ao abrir o arquivo");
+
+        return;
+    }
+    else qDebug("lendo o arquivo");
+
+  escrita.write(dadoSalvo);
+   escrita.flush();
+    escrita.close();
+}
+
 //seta variaveis de inicialização
 void Controle::setInit()
 {
     init = true;
+    initialise = true;
 }
 //recebe do Qml o user correspondente e faz a troca do mesmo
 void Controle::setUser(int users)
@@ -46,7 +92,6 @@ void Controle::setUser(int users)
     else if(user == 2)emit user2();
     else if(user == 3)emit user3();
     else emit user4();
-    qDebug()<<user;
 }
 //requisita o sinal de intensidade para o Led
 void Controle::luminousLed(char sinal)
@@ -107,7 +152,6 @@ void Controle::standBy(bool enable)
 //reseta horas da lâmpada
 void Controle::resetHorasLamp()
 {
-    qDebug("resetado");
     horasLamp = 0;
     minutosLamp = 0;
     this->setHorasLamp(horasLamp);
@@ -272,7 +316,7 @@ bool Controle::openSerial(const QString &name, bool readWrite)
 //inicializa a serial
 bool Controle::serialInit()
 {
-    if(openSerial("ttymxc0",true))
+    if(openSerial("ttymxc0",true)) // ttymxc0
     {
          port->setBaudRate(QSerialPort::Baud19200);
          port->setDataBits(QSerialPort::Data8);
@@ -281,6 +325,29 @@ bool Controle::serialInit()
          port->setFlowControl(QSerialPort::NoFlowControl);
     }
     else qDebug("nao configurado");
+
+    const auto serialPortInfos = QSerialPortInfo::availablePorts();
+    qDebug()<<"total de portas disponiveis: "<< serialPortInfos.count();
+ /*   const QString blankString = "N/A";
+    QString description;
+    QString manufacturer;
+    QString serialNumber;
+
+    for (const QSerialPortInfo &serialPortInfo : serialPortInfos) {
+        description = serialPortInfo.description();
+        manufacturer = serialPortInfo.manufacturer();
+        serialNumber = serialPortInfo.serialNumber();
+
+        qDebug() << "Port: " << serialPortInfo.portName();
+        qDebug() << "Location: " << serialPortInfo.systemLocation();
+        qDebug() << "Description: " << (!description.isEmpty() ? description : blankString);
+        qDebug() << "Manufacturer: " << (!manufacturer.isEmpty() ? manufacturer : blankString);
+        qDebug() << "Serial number: " << (!serialNumber.isEmpty() ? serialNumber : blankString);
+        qDebug() << "Vendor Identifier: " << (serialPortInfo.hasVendorIdentifier() ? QByteArray::number(serialPortInfo.vendorIdentifier(), 16) : blankString);
+        qDebug() << "Product Identifier: " << (serialPortInfo.hasProductIdentifier() ? QByteArray::number(serialPortInfo.productIdentifier(), 16) : blankString);
+        qDebug() << "Busy: " << (serialPortInfo.isBusy() ? QObject::tr("Yes") : QObject::tr("No")) << endl;
+    }*/
+
     return 0;
 }
 //faz calculo do bcc do frame a ser enviado para a ikegami
@@ -429,7 +496,7 @@ int Controle::horas() const
 //calcula a porcentagem de luminosidade do Led
 char Controle::calculateByte(uint16_t value, char operador)
 {
-    int numerador,valor;
+    int numerador = 0,valor = 0;
 
       numerador = value;
 
@@ -462,11 +529,14 @@ void Controle::setIntensity(const int intensity)
     size = 6; read = false; comando = 0;
 
     this->sendFrame(size,read,Led);//tamanho do frame,escreita e leitura na serial,equipamento que receberá o frame
+
+    emit porcentagemLed();
 }
 //verifica a porcentagem e converte em nùmero decimal de
 // o a 1023 para enviar certo para o led
 uint16_t Controle::intensityLed(int luz)
 {
+    percentLed = luz;
     if(luz >= 100) luz = 100;
     else if(luz <= 0) luz = 0;
 
@@ -505,7 +575,7 @@ void Controle::writeBytes(const QList<int> &l, const uint8_t resp)
 //envia o comando requisitado para a ikegami
 void Controle::setComandoIke(int comando)
 {
-    int tamanho,aux_enh,auxVideo;
+    int tamanho = 0,aux_enh = 0,auxVideo = 0;
     bool ikegami = true;
     bool readWrite = false;
 
@@ -531,7 +601,7 @@ void Controle::setComandoIke(int comando)
 
              ikeenv[10] = bcc(9);
 
-             comando = 1; tamanho = 10; // tamanho do frame
+             comando = 0; tamanho = 10; // tamanho do frame
 
              readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
          }break;
@@ -556,10 +626,26 @@ void Controle::setComandoIke(int comando)
            {
                 switch(zoom)
                 {
-                    case 16 : zoom = 21;break;
-                    case 21: zoom = 26;  break;
-                    case 26: zoom = 31; break;
-                    case 31: zoom = 16; break;
+                    case 16 :
+                    {
+                        zoom = 21;
+                        emit mensZoom15();//escreve no monitor zoom de 1.5
+                    }break;
+                    case 21:
+                    {
+                        zoom = 26;
+                        emit mensZoom20();//escreve no monitor zoom de 2.0
+                    }break;
+                    case 26:
+                    {
+                        zoom = 31;
+                        emit mensZoom25();//escreve no monitor zoom de 2.5
+                    } break;
+                    case 31:
+                    {
+                        zoom = 16;
+                        emit mensZoom00();//escreve no monitor zoom de 0.0
+                    } break;
                 }
 
                   emit changeZoomImage();//emite um sinal para mudar a figura do zoom lá no QML
@@ -582,35 +668,36 @@ void Controle::setComandoIke(int comando)
 
         case 5:  // manda o enhancement para a ikegami
         {
-            //if(habilitEnhGain == true){
-        if(init)
-        {
-            if(user != 3)
+            if(init)
             {
-                emit changeEnhancementImage();
-
-                if(enhancement == enhancementHigh)
+                if(((user == 1)||(user == 2)||(user == 4)))
                 {
-                    enhancement = enhancementMed;
-                     // qDebug() << enhancement;
-                }
+                    emit changeEnhancementImage();//Envia um sinal para o QML mudar a figura que indica enhancement
 
-                else if(enhancement == enhancementLow) {
-                    enhancement = enhancementHigh;
-                         // qDebug() << enhancement;
-                 }
+                    if(enhancement == enhancementHigh) //Muda para enhancement médio
+                    {
+                        enhancement = enhancementMed;
+                        emit enhancementMMed();
+                    }
 
-               else if(enhancement == enhancementMed)
-               {
-                     enhancement = enhancementLow;
-                     // qDebug() << enhancement;
+                    else if(enhancement == enhancementLow)//Muda para enhancement high
+                    {
+                        enhancement = enhancementHigh;
+                        emit enhancementHHigh();
+                    }
+
+                    else if(enhancement == enhancementMed)//Musa para enhnacement low
+                    {
+                        enhancement = enhancementLow;
+                        emit enhancementLLow();
+                    }
                 }
-            }
-               else {
-                 enhancement = 0;
-                 emit changedEnhancementOff();
+                else if(user == 3)
+                {
+                    enhancement = 0;
+                    emit changedEnhancementOff(); //coloca o enhancemnt em off
+                }
              }
-      }
              ikeenv[3] = 0x06;ikeenv[4] = 0x1D;ikeenv[5] = 0x7D;
 
              ikeenv[8] = 0x00;
@@ -629,27 +716,29 @@ void Controle::setComandoIke(int comando)
 
          }break;
 
-    case 6:// manda o ganho para a ikegami
-    {
-       // if(habilitEnhGain == true){
-        if(init == true)
-        {
-             if(videoLevel == videoLevelLow)
-             {
-                  videoLevel = videoLevelHigh;
-             }
+         case 6://MANDA O GANHO PARA A IKEGAMI
+         {
+            if(init == true)
+            {
+                if(videoLevel == videoLevelLow)
+                {
+                  videoLevel = videoLevelHigh;// .     Ganho Med
+                  emit ganhoHigh();           //Gain
+                }
 
-             else if(videoLevel == videoLevelHigh)
-             {
-                  videoLevel = videoLevelHigh2;
-             }
+                else if(videoLevel == videoLevelHigh)
+                {
+                  videoLevel = videoLevelHigh2;// ..   Ganho High
+                  emit ganhoUltraHigh();       //Gain
+                }
 
-             else if(videoLevel == videoLevelHigh2)
-             {
-                  videoLevel = videoLevelLow;
-             }
-              emit changeGainImage(); // atualiza a figura no display
-          }
+                else if(videoLevel == videoLevelHigh2)
+                {
+                  videoLevel = videoLevelLow;//      Ganho Low
+                  emit ganhoLow();          // Gain
+                }
+                emit changeGainImage(); // atualiza a figura no display
+            }
 
             ikeenv[3] = 0x0C;ikeenv[4] = 0x1D;ikeenv[5] = 0x8F;ikeenv[6] = 0x8F; ikeenv[7] = 0x8F;
 
@@ -666,9 +755,13 @@ void Controle::setComandoIke(int comando)
             tamanho = 15; comando = 0;
 
             readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+            if(initialise)
+            {
+             if(!init) init = true;
+            }
         }break;
 
-        case 157://troca de user
+        case 7://TROCA DE USER
         {
             ikeenv[3] = 0x05;ikeenv[4] = 0x16;ikeenv[5] = 0x11;
 
@@ -681,16 +774,90 @@ void Controle::setComandoIke(int comando)
             readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
         }break;
 
+        case 8://CHAMA O MENU DA CONFIGURAÇÃO
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x10;
 
+             ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 1008://SAI FORA DO MENU DA CONFIGURAÇÃO
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x90;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 9://SETA PARA CIMA
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x12;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 10://SETA PARA BAIXO
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x13;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 11://SETA PARA DIREITA
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x14;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 12://SETA PARA ESQUERDA
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x15;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
+
+        case 13://ENTER
+        {
+            ikeenv[3] = 0x07;ikeenv[4] = 0x14;ikeenv[5] = 0x81; ikeenv[6] = 0x67; ikeenv[7] = 0x11;
+
+            ikeenv[8] = 0x80; ikeenv[9] = 0x00;ikeenv[10] = bcc(9);
+
+            tamanho = 10; comando = 0;
+
+            readWrite = false;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
+        }break;
     }
 
     this->sendFrame(tamanho,readWrite,ikegami);//tamanho do frame,escreita e leitura na serial,equipamento que receberá o frame
-
 }
 //aqui está as mensagens que serão exibidas no monitor
 void Controle::mensagens(int message, int cor)
 {
-    int tamanho,aux_enh,auxVideo;
+    int tamanho = 0,aux_enh = 0,auxVideo = 0;
     bool readWrite = false;
     bool ikegami = true;
 
@@ -715,9 +882,6 @@ void Controle::mensagens(int message, int cor)
 
                 tamanho = 23; comando = 0;
 
-                readWrite = true;//se for FALSE significa que não necessita da resposta, caso contrario se for TRUE precisa da resposta
-
-
            }
           else if((user == 2)||(user == 6)){
                 ikeenv[6] = 0x20 + 27; ikeenv[7] = 0x20 + 29;
@@ -739,7 +903,7 @@ void Controle::mensagens(int message, int cor)
 
                 ikeenv[10] = 'E';ikeenv[11] = 'N';ikeenv[12] = 'D';ikeenv[13] ='O'; ikeenv[14] = 'F';ikeenv[15] ='L';ikeenv[16] = 'E';
 
-                ikeenv[17] = 'X';ikeenv[18] = 'I';  ikeenv[19] = 'B';ikeenv[20] = 'L'; ikeenv[21] = 'E'; ikeenv[22] = 0x00;ikeenv[23] = bcc(22);
+                ikeenv[17] = 'X';ikeenv[18] = 'I';  ikeenv[19] = 'V';ikeenv[20] = 'E'; ikeenv[21] = 'L'; ikeenv[22] = 0x00;ikeenv[23] = bcc(22);
 
                   tamanho = 23; comando = 0;
            }
@@ -749,7 +913,7 @@ void Controle::mensagens(int message, int cor)
 
                  ikeenv[3] = 12+8;
 
-                ikeenv[10] = 'H';ikeenv[11] = 'Y';ikeenv[12] = 'S';ikeenv[13] ='T'; ikeenv[14] = 'E';ikeenv[15] ='R';ikeenv[16] = 'O';
+                ikeenv[10] = 'H';ikeenv[11] = 'I';ikeenv[12] = 'S';ikeenv[13] ='T'; ikeenv[14] = 'E';ikeenv[15] ='R';ikeenv[16] = 'O';
 
                 ikeenv[17] = '/';ikeenv[18] = 'U';  ikeenv[19] = 'R';ikeenv[20] = 'O'; ikeenv[21] = ' ';ikeenv[22] = 0x00;ikeenv[23] = bcc(22);
 
@@ -759,7 +923,7 @@ void Controle::mensagens(int message, int cor)
 
        }break;
 
-        case 101: // apaga a escrita do láparo
+        case 1001: // apaga a escrita do láparo
         {
            ikeenv[6] = 0x20 + 26; ikeenv[7] = 0x20 + 29;
 
@@ -770,6 +934,39 @@ void Controle::mensagens(int message, int cor)
             ikeenv[17] = ' ';ikeenv[18] = ' ';  ikeenv[19] = ' ';ikeenv[20] = ' '; ikeenv[21] = ' ';ikeenv[22] = ' ';ikeenv[23] = 0x00;ikeenv[24] = bcc(23);
 
            tamanho = 24; comando = 0;
+
+
+        }break;
+
+        case 4: // escreve zoom na tela
+        {
+            ikeenv[6] = 0x20; ikeenv[7] = 0x20 + 30; //posição da mensagem
+
+            ikeenv[3] = 4+8;//números de caracteres + restantes de bytes que compõe o frame
+
+            if(user == 16)
+            {
+               ikeenv[10] = ' ';ikeenv[11] = ' ';ikeenv[12] = ' '; ikeenv[13] =' ';//x0.0
+            }
+
+            if(user == 21)
+            {
+               ikeenv[10] = 'x';ikeenv[11] = '1';ikeenv[12] = '.'; ikeenv[13] ='5';//x1.5
+            }
+
+            if(user == 26)
+            {
+                ikeenv[10] = 'x';ikeenv[11] = '2';ikeenv[12] = '.'; ikeenv[13] ='0';//x2.0
+            }
+
+            if(user == 31)
+            {
+                ikeenv[10] = 'x';ikeenv[11] = '2';ikeenv[12] = '.'; ikeenv[13] ='5';//x2.5
+            }
+
+            ikeenv[14] = 0x00;ikeenv[15] = bcc(14);
+
+            tamanho = 15; comando = 0;
 
 
         }break;
@@ -835,7 +1032,7 @@ void Controle::mensagens(int message, int cor)
 
        }break;
 
-       case 1000:
+       case 1005:
        {
             ikeenv[10] = ' ';ikeenv[11] = ' ';ikeenv[12] = ' ';ikeenv[13] =' '; ikeenv[14] = ' ';ikeenv[15] =' ';ikeenv[16] = ' ';
 
@@ -852,7 +1049,7 @@ void Controle::mensagens(int message, int cor)
               tamanho = 27; comando = 0;
 
        }break;
-       case 12:
+       case 12://ESCREVE GANHO
         {
            if(videoLevel == videoLevelLow)
            {
@@ -888,49 +1085,179 @@ void Controle::mensagens(int message, int cor)
            }
         }break;
 
-         case 80:
+         case 80://ESCREVE: ASTUS MEDICAL 4K UHD
          {
             ikeenv[6] = 0x20 + 4; ikeenv[7] = 0x20 + 1;
 
-            ikeenv[3] = 27+8;
+            ikeenv[3] = 20+8;
 
-            ikeenv[10] = 'V';ikeenv[11] = 'I';ikeenv[12] = 'V';ikeenv[13] ='I'; ikeenv[14] = 'D';ikeenv[15] =' ';ikeenv[16] = 'N';
+            ikeenv[10] = 'A';ikeenv[11] = 'S';ikeenv[12] = 'T';ikeenv[13] ='U'; ikeenv[14] = 'S';ikeenv[15] =' ';ikeenv[16] = 'M';
 
-            ikeenv[17] = 'U';ikeenv[18] = 'V';  ikeenv[19] = 'O';ikeenv[20] = 'T'; ikeenv[21] = 'E'; ikeenv[22] = 'C';
+            ikeenv[17] = 'E';ikeenv[18] = 'D';  ikeenv[19] = 'I';ikeenv[20] = 'C'; ikeenv[21] = 'A'; ikeenv[22] = 'L';
 
-            ikeenv[23] = 'H';ikeenv[24] = ' ';ikeenv[25] = 'E';ikeenv[26] = 'D';ikeenv[27] ='G'; ikeenv[28] = 'E';ikeenv[29] =' ';ikeenv[30] = 'L';
-
-            ikeenv[31] = 'C';ikeenv[32] = ' ';  ikeenv[33] = 'P';ikeenv[34] = 'L'; ikeenv[35] = 'U'; ikeenv[36] = 'S';ikeenv[37] = 0x00;ikeenv[38] = bcc(37);
+            ikeenv[23] = ' ';ikeenv[24] = '4';ikeenv[25] = 'K';ikeenv[26] = ' ';ikeenv[27] ='U'; ikeenv[28] = 'H';ikeenv[29] ='D'; ikeenv[30] = 0x00;ikeenv[31] = bcc(30);
 
             tamanho = 38; comando = 0;
 
           }break;
 
-          case 800:
+          case 1080://APAGA: ASTUS MEDICAL 4K UHD
          {
            ikeenv[6] = 0x20 + 4; ikeenv[7] = 0x20 + 1;
 
-           ikeenv[3] = 27+8;
+           ikeenv[3] = 20+8;
 
            ikeenv[10] = ' ';ikeenv[11] = ' ';ikeenv[12] = ' ';ikeenv[13] =' '; ikeenv[14] = ' ';ikeenv[15] =' ';ikeenv[16] = ' ';
 
            ikeenv[17] = ' ';ikeenv[18] = ' ';  ikeenv[19] = ' ';ikeenv[20] = ' '; ikeenv[21] = ' '; ikeenv[22] = ' ';
 
-           ikeenv[23] = ' ';ikeenv[24] = ' ';ikeenv[25] = ' ';ikeenv[26] = ' ';ikeenv[27] =' '; ikeenv[28] = ' ';ikeenv[29] =' ';ikeenv[30] = ' ';
-
-           ikeenv[31] = ' ';ikeenv[32] = ' ';  ikeenv[33] = ' ';ikeenv[34] = ' '; ikeenv[35] = ' '; ikeenv[36] = ' ';ikeenv[37] = 0x00;ikeenv[38] = bcc(37);
+           ikeenv[23] = ' ';ikeenv[24] = ' ';ikeenv[25] = ' ';ikeenv[26] = ' ';ikeenv[27] =' '; ikeenv[28] = ' ';ikeenv[29] =' ';ikeenv[30] = 0x00;ikeenv[31] = bcc(30);
 
            tamanho = 38;comando = 0;
 
-      }break;
+          }break;
 
+          case 90://ESCREVE A PORCENTAGEM DO LED NO MONITOR
+         {
+           ikeenv[6] = 32 + 0x20; ikeenv[7] = 30 + 0x20;
+
+           ikeenv[3] = 8+8;
+
+           ikeenv[10] = 'L';ikeenv[11] = 'E';ikeenv[12] = 'D';ikeenv[13] =' ';
+           switch(percentLed)
+           {
+                  case 0:
+                 {
+                    ikeenv[14] = '0';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                 }break;
+
+                 case 10:
+                 {
+                    ikeenv[14] = '1';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                 }break;
+
+                 case 20:
+                 {
+                    ikeenv[14] = '2';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                 }break;
+
+                case 30:
+                {
+                    ikeenv[14] = '3';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 40:
+                {
+                    ikeenv[14] = '4';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 50:
+                {
+                    ikeenv[14] = '5';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 60:
+                {
+                    ikeenv[14] = '6';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 70:
+                {
+                    ikeenv[14] = '7';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 80:
+                {
+                    ikeenv[14] = '8';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 90:
+                {
+                    ikeenv[14] = '9';ikeenv[15] = '0';ikeenv[16] = '%';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+
+                case 100:
+                {
+                    ikeenv[14] = '1';ikeenv[15] = '0';ikeenv[16] = '0';ikeenv[17] ='%';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+                }break;
+           }
+
+
+           tamanho = 20;comando = 0;
+
+         }break;
+
+         case 1090://APAGA A PORCENTAGEM DO LED NO MONITOR
+        {
+            ikeenv[6] = 32 + 0x20; ikeenv[7] = 30 + 0x20;
+
+            ikeenv[3] = 8+8;
+
+            ikeenv[10] = ' ';ikeenv[11] = ' ';ikeenv[12] = ' ';ikeenv[13] =' ';
+
+            ikeenv[14] = ' ';ikeenv[15] = ' ';ikeenv[16] = ' ';ikeenv[17] =' ';ikeenv[18] = 0x00;  ikeenv[19] = bcc(18);
+
+            tamanho = 20;comando = 0;
+
+          }break;
+      }
    //envia os dados para a serial
-     this->sendFrame(tamanho,readWrite,ikegami);//tamanho do frame,escreita e leitura na serial,equipamento que receberá o frame
-
-}
+         this->sendFrame(tamanho,readWrite,ikegami);//tamanho do frame,escreita e leitura na serial,equipamento que receberá o frame
 
 
 }
+//troca de user
+void Controle::changeUser(int users)
+{
+    user = users;
+    init = false;
+   // setComandoIke(157);//troca o user
+
+    switch(user)
+    {
+        case 1:
+        {
+            videoLevelLow = videoLevelLow1;
+            enhancementHigh = enhancementHigh1;
+            emit laparo();//escreve no monitor em qual user estamos
+            emit changeEnhancementImage();//coloca a figura no dispay ao user correspondente
+        }break;
+
+        case 2:
+        {
+            videoLevelLow = videoLevelLow2;
+            enhancementHigh = enhancementHigh2;
+            emit laparo();
+            emit changeEnhancementImage();
+        }break;
+
+        case 3:
+        {
+            videoLevelLow = videoLevelLow3;
+            enhancementHigh = enhancementHigh3;
+             emit changedEnhancementOff();
+        }break;
+
+        case 4:
+        {
+            videoLevelLow = videoLevelLow4;
+            enhancementHigh = enhancementHigh4;
+            emit laparo();
+            emit changeEnhancementImage();
+        }break;
+    }
+
+    videoLevelHigh = videoLevelLow + deltaVideoLevel;
+    videoLevelHigh2 = videoLevelHigh + deltaVideoLevel;
+
+    enhancementMed = enhancementMed - deltaEnhancement2;
+    enhancementLow = enhancementMed - deltaEnhancement;
+
+    videoLevel = videoLevelLow;
+    enhancement = enhancementHigh;
+
+}
+
 
 
 

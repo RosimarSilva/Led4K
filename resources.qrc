@@ -125,5 +125,6 @@
         <file>IconesConfig/setaEsc.bmp</file>
         <file>IconesConfig/SetaDown.bmp</file>
         <file>IconesConfig/SetaDir.bmp</file>
+        <file>Icones/HomeBack.png</file>
     </qresource>
 </RCC>

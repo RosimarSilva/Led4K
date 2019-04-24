@@ -19,7 +19,8 @@ SOURCES += \
     init.cpp \
     controle.cpp \
     calendar.cpp \
-    senha.cpp
+    senha.cpp \
+    gpio.cpp
 
 RESOURCES += qml.qrc \
     resources.qrc
@@ -39,6 +40,7 @@ HEADERS += \
     init.h \
     controle.h \
     calendar.h \
-    senha.h
+    senha.h \
+    gpio.h
 
 DISTFILES +=

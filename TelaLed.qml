@@ -23,6 +23,7 @@ Item {
             interval: 5000
             onTriggered: {
                 root.state = "Principal"
+                serial.mensagens(1090,1);//apaga a porcentagem do led do monitor
             }
         }
 
@@ -38,6 +39,38 @@ Item {
             onHorasLampChanged:{
                        horaslamp = serial.horas;
              }
+        }
+        //recebe um comando da cabeça para mudar para a tela principal
+        Connections{
+           target: gpio
+           onChangeTelaPrincipal:{
+                root.state  = "Principal"
+               gpio.setTela(1);
+               serial.serial.mensagens(1090,1);//apaga a porcentagem do led do monitor
+            }
+        }
+
+        //recebe um comando da cabeça para aumentar a intensidade do led
+        Connections{
+           target: gpio
+           onChangeLuminousMais:{
+               luminous +=1;
+               if(luminous>=10)luminous = 10;
+               setLuminous();
+               serial.luminousLed(2);
+                back.restart();
+            }
+        }
+       //recebe um comando da cabeça para diminuir a intensidade do led
+        Connections{
+           target: gpio
+           onChangeLuminousMenos:{
+               luminous -=1;
+               if(luminous<=0)luminous = 0;
+               setLuminous();
+               serial.luminousLed(1);
+               back.restart();
+            }
         }
         Text {
             x: 535
@@ -199,13 +232,18 @@ Item {
             x: 651
             y: 8
             fillMode: Image.PreserveAspectFit
-            source: "IndicadoresCentrais/BotaoMenu.png"
+            source: "Icones/HomeBack.png"
             MouseArea{
+                anchors.rightMargin: 0
+                anchors.bottomMargin: 0
+                anchors.leftMargin: 0
+                anchors.topMargin: 0
                 anchors.fill: parent
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
                     root.state = "Principal"
+                    serial.mensagens(1090,1);//apaga a porcentagem do led do monitor
                 }
             }
         }
@@ -223,7 +261,7 @@ Item {
             x: 653
             y: 134
             fillMode: Image.PreserveAspectFit
-            source: "IndicadoresCentrais/StandByVerde.png"
+            source: "IndicadoresCentrais/StandByBranco.png"
             MouseArea{
                 anchors.fill: parent
                 onPressed: {parent.scale  = 0.95;}

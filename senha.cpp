@@ -9,13 +9,13 @@ Senha::Senha(QObject *parent): QObject(parent)
 
     qDebug() << Q_FUNC_INFO;
 }
-
+//destrutor da classe
 Senha::~Senha()
 {
     delete teste;
 qDebug() << Q_FUNC_INFO;
 }
-
+//recebe o número digitado e faz o cálculo da senha
 void Senha::setSenha(int number)
 {
 
@@ -185,7 +185,7 @@ void Senha::setSenha(int number)
     qDebug()<<senhaDig;
 
 }
-
+//recebe os números digitados para definir o número de série
 void Senha::setserialNumber(int number,int tecla)
 {
     int aux = 0,aux_aux = 0;
@@ -259,9 +259,9 @@ void Senha::setserialNumber(int number,int tecla)
     }
 
 }
-
-
-
+/*como para digitar senha de configuração e senha para alterar o número de série
+ * usa-se a mesma rotina no software, esta rotina define se o usuário quer entrar
+ * na configuração ou digitar o número de série*/
 void Senha::setConfig(bool confs)
 {
    if(confs) modeConfig = true;
@@ -271,18 +271,92 @@ void Senha::setConfig(bool confs)
     qDebug("mode changed"); qDebug()<<modeConfig;
 
 }
+//escreve horas da lâmpada
+void Senha::writeHoras(int number, int tecla)
+{
+    if(tecla != 99)contHours ++;
 
+    else if(tecla == 99)contHours --;
+
+    if(tecla == 100)contHours = 10;
+
+    switch (contHours)
+    {
+       case 1:
+       {
+        horasLamp = number;
+        this->setHorasLamp(horasLamp);
+
+       } break;
+
+       case 2:
+      {
+        horasLamp = horasLamp*10;
+        horasLamp += number;
+        this->setHorasLamp(horasLamp);
+
+
+      } break;
+
+       case 3:
+     {
+         horasLamp = horasLamp*10;
+        horasLamp += number;
+        this->setHorasLamp(horasLamp);
+
+
+      } break;
+
+      case 4:
+      {
+         horasLamp = horasLamp*10;
+          horasLamp += number;
+        this->setHorasLamp(horasLamp);
+
+      } break;
+
+      case 5:
+     {
+        horasLamp = horasLamp*10;
+         horasLamp += number;
+        this->setHorasLamp(horasLamp);
+
+     } break;
+
+     case 6:
+     {
+        horasLamp = horasLamp*10;
+         horasLamp += number;
+       this->setHorasLamp(horasLamp);
+
+     } break;
+   }
+
+
+    if(tecla == 100)
+    {
+       emit backConfig();
+        contHours = 0;
+    }
+    else if(tecla == 99)
+    {
+       horasLamp = 0;
+       minutosLamp = 0;
+       contHours = 0;
+    }
+    qDebug()<<horasLamp;
+}
+//manda trocar para a tela de configuração
 void Senha::setscreenConfig()
 {
     emit screenConfig();
 }
-
+//manda voltar para tela de menu
 void Senha::setscreenMenu()
 {
     emit screenMenu();
 }
-
-
+//envia para o qml o numero digitado
 void Senha::setserial(const int value)
 {
     if(m_serial!= value)
@@ -291,8 +365,19 @@ void Senha::setserial(const int value)
         emit changedSerial();
     }
 }
-
+//retorna o ultimo número digitado quando solicitado
 unsigned int Senha::serial() const
 {
     return m_serial;
+}
+
+void Senha::setHorasLamp(const int value)
+{
+    horasLamp = value;
+    emit horasLampChanged();
+}
+
+int Senha::horas() const
+{
+     return horasLamp;
 }

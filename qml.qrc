@@ -11,5 +11,6 @@
         <file>SerialNumber.qml</file>
         <file>Config.qml</file>
         <file>Mensagens.qml</file>
+        <file>HorasLampada.qml</file>
     </qresource>
 </RCC>

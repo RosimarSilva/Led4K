@@ -19,6 +19,7 @@ Item {
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
+                    serial.setComandoIke(12);//para esuqerda
                 }
             }
         }
@@ -34,6 +35,7 @@ Item {
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
+                    serial.setComandoIke(9);//para cima
                 }
             }
         }
@@ -49,6 +51,7 @@ Item {
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
+                    serial.setComandoIke(11);//para direi
                 }
             }
         }
@@ -64,6 +67,7 @@ Item {
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
+                    serial.setComandoIke(13);//enter
                 }
             }
         }
@@ -83,6 +87,27 @@ Item {
                 onPressed: {parent.scale  = 0.95;}
                 onReleased: {
                     parent.scale = 1.0;
+                    serial.setComandoIke(10);//para cima
+                }
+            }
+        }
+
+        Image {
+            id: horas
+            x: 626
+            y: 29
+            fillMode: Image.PreserveAspectFit
+            source: "IndicadoresCentrais/BotaoMenu.png"
+            MouseArea{
+                anchors.rightMargin: 0
+                anchors.bottomMargin: 6
+                anchors.leftMargin: 0
+                anchors.topMargin: -6
+                anchors.fill: parent
+                onPressed: {parent.scale  = 0.95;}
+                onReleased: {
+                    parent.scale = 1.0;
+                   root.state = "HorasLamp"
                 }
             }
         }
@@ -100,6 +125,7 @@ Item {
             onReleased: {
                 parent.scale = 1.0;
                 root.state = "Menu"
+                serial.setComandoIke(1008);//sai fora do menu de configuração da ikegami
             }
         }
     }

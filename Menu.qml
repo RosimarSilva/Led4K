@@ -1,7 +1,7 @@
 import QtQuick 2.0
 
 Item {
-    property  int versaoSoftawre: 110419
+    property  int versaoSoftawre: 220419
      property  int seriales: 0
     Image {
         id: image

@@ -17,7 +17,7 @@ Calendar::Calendar(QObject *parent): QObject(parent)
 
    qDebug() << Q_FUNC_INFO;
 }
-
+//destrutor da classe
 Calendar::~Calendar()
 {
     delete timer;
@@ -25,7 +25,7 @@ Calendar::~Calendar()
 
     qDebug() << Q_FUNC_INFO;
 }
-
+//seta horas do sistema
 void Calendar::setHoras(const int value)
 {
     bool ok = false;
@@ -40,7 +40,7 @@ void Calendar::setHoras(const int value)
         qDebug()<<data;
 
 }
-
+//muda set da hora
 void Calendar::setDia(const int value)
 {
    if(m_dia != value)
@@ -49,12 +49,12 @@ void Calendar::setDia(const int value)
        emit changedDia();
    }
 }
-
+//Muda set do dia
 int Calendar::dia() const
 {
     return m_dia;
 }
-
+//Muda set do mes
 void Calendar::setMes(const int value)
 {
     if(m_mes != value)
@@ -63,12 +63,12 @@ void Calendar::setMes(const int value)
         emit changedMes();
     }
 }
-
+//Muda o set do mês
 int Calendar::mes() const
 {
     return m_mes;
 }
-
+//Muda o set do ano
 void Calendar::setAno(const int value)
 {
     if(m_ano != value)
@@ -77,12 +77,12 @@ void Calendar::setAno(const int value)
         emit changedAno();
     }
 }
-
+//Retorna o ano variável
 int Calendar::ano() const
 {
     return m_ano;
 }
-
+//seta o set do minuto
 void Calendar::setMinuto(const int value)
 {
     if(m_minuto != value)
@@ -91,12 +91,12 @@ void Calendar::setMinuto(const int value)
         emit changeMinuto();
     }
 }
-
+//retorna o miniuto
 int Calendar::minuto() const
 {
    return m_minuto;
 }
-
+//seta a hora
 void Calendar::setHora(const int value)
 {
     if(m_hora != value)
@@ -105,12 +105,12 @@ void Calendar::setHora(const int value)
         emit changedHora();
     }
 }
-
+//retorna a hora
 int Calendar::hora() const
 {
    return m_hora;
 }
-
+//Atualiza a hora no display a cada minuto
 void Calendar::showTime()
 {
      int ano;
@@ -129,7 +129,7 @@ void Calendar::showTime()
 
     this->setAno(ano);
 }
-
+// Atualiza a data no display a cada minuto
 void Calendar::showData()
 {
     int ano;

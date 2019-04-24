@@ -33,16 +33,17 @@ Item {
                 target: serial
             onChangeEnhancementImage:{
                      imageEnhancement();
-             }
+            }
         }
 
         Connections{//coloca a imagem enhancemnet off no display
                 target: serial
             onChangedEnhancementOff:{
                     enhancement.state = "EnhanceOff"
-                enhancementy = 0;
+                    enhancementy = 0;
              }
         }
+
 
         Connections{//troca a imagem do ganho do display
                 target: serial
@@ -71,6 +72,47 @@ Item {
             onUser4:{ laparo.state = "User4"}
         }
 
+        // escreve no monitor em qual user estamos
+        Connections{
+                target: serial
+             onLaparo:{ enhancementy = 0;
+                setEnhancement.start();
+             }
+         }
+       //recebeu comando da cabeça para mudar de tela
+        Connections{
+            target: gpio
+            onChangeTelaLed:{
+                root.state = "TelaLed"
+                gpio.setTela(2);
+               serial.mensagens(90,1);//escreve a porcentagem do led do monitor
+            }
+        }
+        //esses timers funcionam apenas quando há troca de user
+        Timer
+        {
+            id:setEnhancement
+            interval: 500
+            running: false
+            repeat: false
+            onTriggered:{ serial.setComandoIke(5);
+                setGain.start();
+            }
+        }
+
+        Timer
+        {
+            id:setGain
+            interval: 500
+            running: false
+            repeat: false
+            onTriggered:{ serial.setComandoIke(6);
+                ganho = 100;
+                imageGain()
+            }
+        }
+
+
         Image {
             id: enhancement
             x: 45
@@ -87,7 +129,6 @@ Item {
                 onReleased: {
                     parent.scale = 1.0;
                     serial.setComandoIke(5);
-
                 }
              }
 
@@ -221,7 +262,8 @@ Item {
                     parent.scale = 1.0;
                     root.state = "TelaLed"
                     serial.changeTela(2);
-
+                    gpio.setTela(2);
+                    serial.mensagens(90,1);//escreve a porcentagem do led do monitor
                 }
              }
         }

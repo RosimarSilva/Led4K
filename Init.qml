@@ -24,12 +24,16 @@ Item {
                 case 1: inicializa.state="Init1"
                     break
                 case 2: inicializa.state="Init2"
+                    serial.mensagens(80,1);//escreve o nome da empresa
                     break
                 case 3: inicializa.state="Init3"
+                    serial.setUser(1);//seleciona o user em 1
                     break
                 case 4: inicializa.state="Init4"
+                    serial.setComandoIke(5); //coloca enhancement em high
                     break
                 case 5: inicializa.state="Init5"
+                     serial.setComandoIke(6);//coloca ganho em low
                     break
                 case 6: inicializa.state="Init6"
                     break
@@ -40,6 +44,7 @@ Item {
                 case 9: inicializa.state="Init9"
                     break
                 case 10: inicializa.state="Init10"
+                     serial.mensagens(1080,1);//apaga o nome da empresa
                     break
                 case 11: root.state="Principal"
                     serial.setInit();//diz para o qml que ja pode receber os comandos pelo display

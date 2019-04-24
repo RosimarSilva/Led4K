@@ -50,6 +50,7 @@ Item {
                           parent.scale = 1.0;
                     serial.setUser(1);
                     escLaparo01.state = "Laparo01"
+                     serial.changeUser(1,1);
                     back.start();
                     timeBack.stop();
                 }
@@ -69,7 +70,8 @@ Item {
                     parent.scale = 1.0;
                     serial.setUser(2);
                     escLaparo01.state = "Laparo02"
-                     back.start();
+                    serial.changeUser(2,1);
+                    back.start();
                     timeBack.stop();
                 }
             }
@@ -88,7 +90,8 @@ Item {
                     parent.scale = 1.0;
                     serial.setUser(3);
                     escLaparo01.state = "Laparo03"
-                     back.start();
+                    serial.changeUser(3,1);
+                    back.start();
                     timeBack.stop();
                 }
             }
@@ -107,7 +110,8 @@ Item {
                     parent.scale = 1.0;
                     serial.setUser(4);
                     escLaparo01.state = "Laparo04"
-                     back.start();
+                    serial.changeUser(4,1);
+                    back.start();
                     timeBack.stop();
                 }
             }
@@ -163,9 +167,7 @@ Item {
                 visible: escLaparo01.state ==  "Laparo04"
             }
         }
-
-    }
-
+     }
 }
 
 /*##^## Designer {

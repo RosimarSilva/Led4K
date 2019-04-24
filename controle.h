@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
 #include <QString>
 #include <QIODevice>
@@ -11,6 +12,15 @@
 #include <QProcess>
 #include <QFileSystemWatcher>
 #include <QTextStream>
+
+
+#define ENABLE_LED 1
+#define DISABLE_LED 6
+#define ENABLE_DISABLE_FIBER_SENSE 4
+#define READ_TEMPERATURE 2
+#define READ_PARAMETERS 5
+#define ENABLE_FIBER_SENSE 9
+#define DISABLE_FIBER_SENSE 10
 
 class Controle:public QObject
 {
@@ -33,9 +43,11 @@ public:
     Q_INVOKABLE void writeHoras(int number,int tecla);
     Q_INVOKABLE void testeLed(const int sinal);
     Q_INVOKABLE void stopTest(void);
-     Q_INVOKABLE void changeTela(int tela);
+    Q_INVOKABLE void changeTela(int tela);
     Q_INVOKABLE void mensagens(int message, int cor);
+    Q_INVOKABLE void changeUser(int users);
 
+   void writeFlash(void);
    bool openSerial(const QString &name, bool readWrite);
    bool serialInit(); void writeBytes(const QList<int> &l, const uint8_t resp);
    int bcc(uint8_t size);
@@ -75,6 +87,30 @@ signals:
     void horasLampChanged();
     void backConfig();
 
+    // envia um sina para  o qml exibir mensagens de zoom no monitor
+   void mensZoom00(void);
+   void mensZoom15(void);
+   void mensZoom20(void);
+   void mensZoom25(void);
+
+   // envia mensagem para o qml exibir mensagem de ganho no monitor
+   void ganhoHigh(void);
+   void ganhoUltraHigh(void);
+   void ganhoLow(void);
+
+   // envia mensagem para o qml exibir mensagem de enhancement no monitor
+   void enhancementLLow(void);
+   void enhancementMMed(void);
+   void enhancementHHigh(void);
+   void enhancementOOff(void);
+
+   // envia mensagem para o qml exibir mensagem da porcentagem do led no monitor
+   void porcentagemLed(void);
+
+   //envia um sinal para o qml escrever qual user estamos
+   void laparo(void);
+   void lap03(void);
+
 
 public slots:
     void whiteBalance(void);
@@ -101,7 +137,7 @@ private:
      bool liberaTest;
      int horasLamp = 0, minutosLamp = 0,m_horasLamp = 0,contHours = 0,lumin = 0;
      int tecla;
-     int luminous = 0,intensidade = 0;
+     int luminous = 0,intensidade = 0,percentLed = 0;
 
      union{
         uint8_t b[2];
@@ -161,26 +197,15 @@ private:
      int videoLevel_low1;
      int enhancement;
      int zoom = 16;
-     int user;
+     int user = 1;
      int videoLevelLow1,videoLevelLow2,videoLevelLow3,videoLevelLow4,videoLevelLow5,videoLevelLow6,videoLevelLow7,videoLevelLow8,videoLevelLow;
      int  enhancementHigh1,enhancementHigh2,enhancementHigh3,enhancementHigh4,enhancementHigh5,enhancementHigh6,enhancementHigh7,enhancementHigh8, enhancementHigh;
      int enhancementMed,videoLevelHigh2,enhancementLow,videoLevelHigh;
-     int deltaVideoLevel = 16;
-     int deltaVideoLevel2 = 10;
-     int deltaEnhancement = 27;
-     int deltaEnhancement2 = 27;
-     bool init;
-
-
-
-     #define ENABLE_LED 1
-     #define DISABLE_LED 6
-     #define ENABLE_DISABLE_FIBER_SENSE 4
-     #define READ_TEMPERATURE 2
-     #define READ_PARAMETERS 5
-     #define ENABLE_FIBER_SENSE 9
-     #define DISABLE_FIBER_SENSE 10
-
+     int deltaVideoLevel = 16;         //16 para 4k //16 para modelo 310 ,8 para modelo 311 para 1cmos
+     int deltaVideoLevel2 = 10;    //16 para 4k //10 para modelo 310 ,8 para modelo 311 para 1cmos
+     int deltaEnhancement = 10;       //10 para 4k //25 para 1cmos  //15 para 3cmos
+     int deltaEnhancement2 = 10;   //10 para 4k //27 para 1cmos  //27 para 3cmos
+     bool init = false,initialise = false;
 };
 
 #endif // CONTROLE_H
